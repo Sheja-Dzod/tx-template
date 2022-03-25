@@ -1,10 +1,23 @@
 from pathlib import Path
 import re
 import sys
+import json
+import pickle
+
 from uuid import uuid4
+
 import polib
 from antx import transfer
-from botok import Text
+from botok import Text, BasicTrie
+
+
+def segment_in_words(string):
+    t = Text(string)
+    tokenized = t.tokenize_words_raw_text
+    # format tokens
+    tokenized = re.sub('([^།་_]) ([^_།་])', '\g<1>␣\g<2>', tokenized)  # affixed particles
+    tokenized = re.sub('_', ' ', tokenized)  # spaces
+    return tokenized
 
 
 class Po:
@@ -16,6 +29,7 @@ class Po:
             'Content-Type': 'text/plain; charset=utf-8',
             'Content-Transfer-Encoding': '8bit',
         }
+        self.glossary = Glossary()
 
     def _create_entry(self, msgid, msgstr="", msgctxt=None, comment=None, tcomment=None):
         """
@@ -47,12 +61,22 @@ class Po:
                 no_notes, line = line, no_notes
             no_notes = re.sub('\[.+?\]', '', no_notes)
             # segment
-            t = Text(no_notes)
-            no_notes = t.tokenize_words_raw_text
-            # format tokens
-            no_notes = re.sub('([^།་_]) ([^_།་])', '\g<1>␣\g<2>', no_notes)   # affixed particles
-            no_notes = re.sub('_', ' ', no_notes)   # spaces
-            self._create_entry(msgid=no_notes, msgctxt=ctxt, tcomment=line)
+            no_notes = segment_in_words(no_notes)
+            # get glossary entries
+            entries = self.glossary.find_entries(no_notes)
+            comment = self.format_found_entries(entries)
+            print()
+            self._create_entry(msgid=no_notes, msgctxt=ctxt, tcomment=comment)
+
+    def format_found_entries(self, entries):
+        out = []
+        for a, defs in entries:
+            out.append(f'\n、	〝{a[0]}〞 {a[1]}')
+            for defn, lines in defs:
+                lines = [l.replace('\n', '').replace('—', '-') for l in lines]
+                out.append(f'《{defn}》	{" // ".join(lines)}')
+        return '\n'.join(out)
+
 
     def txt_to_po(self, filename):
         lines = filename.read_text(encoding='utf-8')
@@ -104,10 +128,7 @@ class Transfer:
         po_file = polib.pofile(po_file)
         po_entries = []
         for p in po_file:
-            if p.tcomment:
-                line = p.tcomment
-            else:
-                line = p.msgid.replace(' ', '').replace(' ', ' ')
+            line = p.msgid.replace(' ', '').replace(' ', ' ')
             po_entries.append([line, p.msgctxt])
         po_dump = '\n'.join([''.join((a, f'—{b}—')) for a, b in po_entries])
         pattern = [['uuid', '(—.+?—)']]
@@ -134,6 +155,43 @@ class Transfer:
 
     def get_unique_id(self):
         return uuid4().hex
+
+
+class Glossary:
+    def __init__(self):
+        glos_file = 'resources/glossary.json'
+        self.entries = self.__parse_json(glos_file)
+
+    def __parse_json(self, in_file):
+        in_file = Path(in_file)
+        p_file = in_file.parent / (in_file.stem + '.pickle')
+        if p_file.is_file():
+            entries = pickle.load(open(p_file, 'rb'))
+        else:
+            entries = {}
+            glos = json.loads(Path(in_file).read_text())
+            for num, entry in glos.items():
+                word = entry[0]
+                word = word[:-1] if word.endswith('།') else word
+                segmented = segment_in_words(word).replace('␣', ' ').replace('་ ', ' ')
+                entries[segmented] = [(word, num), entry[1]]
+            pickle.dump(entries, open(p_file, 'wb'))
+        return entries
+
+    def find_entries(self, segment):
+        segment = segment.replace('␣', ' ').replace('་ ', ' ').replace(' ', ' ')
+        return self._find_matches(segment)
+
+    def _find_matches(self, segment):
+        matches = []
+        for word in self.entries:
+            if segment.startswith(f'{word} '):
+                matches.append(self.entries[word])
+            elif segment.endswith(f' {word}'):
+                matches.append(self.entries[word])
+            elif f' {word} ' in segment:
+                matches.append(self.entries[word])
+        return matches
 
 
 if __name__ == '__main__':
