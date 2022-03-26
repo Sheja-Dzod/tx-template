@@ -65,7 +65,6 @@ class Po:
             # get glossary entries
             entries = self.glossary.find_entries(no_notes)
             comment = self.format_found_entries(entries)
-            print()
             self._create_entry(msgid=no_notes, msgctxt=ctxt, tcomment=comment)
 
     def format_found_entries(self, entries):
@@ -74,9 +73,9 @@ class Po:
             out.append(f'\n、	〝{a[0]}〞 {a[1]}')
             for defn, lines in defs:
                 lines = [l.replace('\n', '').replace('—', '-') for l in lines]
-                out.append(f'《{defn}》	{" // ".join(lines)}')
+                lines = '\n'.join([f' ⁃ {l}' for l in lines])
+                out.append(f'《{defn}》	{lines}')
         return '\n'.join(out)
-
 
     def txt_to_po(self, filename):
         lines = filename.read_text(encoding='utf-8')
