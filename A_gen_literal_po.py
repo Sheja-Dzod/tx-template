@@ -73,7 +73,7 @@ class Po:
             out.append(f'\n、	〝{a[0]}〞 {a[1]}')
             for defn, lines in defs:
                 lines = [l.replace('\n', '').replace('—', '-') for l in lines]
-                lines = '\n'.join([f' ⁃ {l}' for l in lines])
+                lines = ''.join([f' ⁃ {l}' for l in lines])
                 out.append(f'《{defn}》	{lines}')
         return '\n'.join(out)
 

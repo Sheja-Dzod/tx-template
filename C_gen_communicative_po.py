@@ -60,7 +60,7 @@ class Po:
 
 
 if __name__ == '__main__':
-    folder = 'fr/sem_pars'
+    folder = 'communicative/paragraphs'
     if len(sys.argv) > 1:
         stem = sys.argv[1]
         file = Path(folder) / (stem + '.txt')

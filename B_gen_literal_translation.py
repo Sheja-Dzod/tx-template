@@ -13,28 +13,27 @@ class Po:
     def format_entries(self):
         entries = []
         for entry in self.file:
-            if entry.tcomment:
-                text = entry.tcomment
-            else:
-                text = entry.msgid
-                text = text.replace(' ', '').replace('␣', '').replace(' ', ' ')
+            text = entry.msgid
+            text = text.replace(' ', '').replace('␣', '').replace(' ', ' ')
             text = text.replace('\n', ' ')
-            text = "\t" + text  # add tab to indent original
-            entries.append((entry.msgstr, text))
-        return '\n'.join(['\n'.join(e) for e in entries]), '\n'.join([e[0] for e in entries])
+            trans = entry.msgstr
+            entries.append((text, trans))
+        return '\n'.join(['\n'.join([e[0], '\t' + e[1]]) for e in entries]), \
+               '\n'.join([e[1].strip() for e in entries]), \
+               '\n'.join(['\n'.join([e[1], '\t' + e[0]]) for e in entries])
 
     def write_txt(self):
-        orig_trans, trans = self.format_entries()
+        orig_trans, trans, pars_trans = self.format_entries()
 
         bitext = self.infile.parent / (self.infile.stem + '.txt')
         bitext.write_text(orig_trans)
 
-        translation = self.infile.parent / (self.infile.stem + '_translation.txt')
+        translation = self.infile.parent / (self.infile.stem + '_only.txt')
         translation.write_text(trans)
 
         pars = Path(copy_folder) / (self.infile.stem + '.txt')
         if not pars.is_file():
-            pars.write_text(orig_trans)
+            pars.write_text(pars_trans)
         else:
             # update file retaining the paragraph delimitations
             pars_old = pars.read_text(encoding='utf-8')
@@ -55,8 +54,8 @@ class Po:
 
 
 if __name__ == '__main__':
-    folder = 'sem/fr'
-    copy_folder = 'fr/sem_pars'
+    folder = 'literal/translation'
+    copy_folder = 'communicative/paragraphs'
     for file in Path(folder).glob('*.po'):
         po = Po(file)
         po.write_txt()

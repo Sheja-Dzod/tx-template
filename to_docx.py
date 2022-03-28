@@ -11,7 +11,7 @@ def create_total_docx(chunks, path):
     indentation = 0.5
     tibetan_style = {
         'font': 'Jomolhari',
-        'size': 11
+        'size': 12
     }
     pedurma_style = {
         'color': (112, 128, 144),
@@ -19,11 +19,11 @@ def create_total_docx(chunks, path):
         'size': 8
     }
     semantic_style = {
-        'font': 'Free Mono',
+        'font': 'Lato Light',
         'size': 10
     }
     communicative_style = {
-        'font': 'Gentium',
+        'font': 'Gentium Book Basic',
         'size': 12
     }
 

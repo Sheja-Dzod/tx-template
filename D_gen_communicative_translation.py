@@ -25,7 +25,7 @@ class Po:
             entries.append((entry.msgstr, text))
 
         all = []
-        pair_dump = Path('fr/sem_pars/') / (self.infile.stem + '.txt')
+        pair_dump = Path('communicative/paragraphs/') / (self.infile.stem + '.txt')
         source_sem_pairs = self.parse_txt_dump(pair_dump.read_text(encoding='utf-8'))
         if len(entries) != len(source_sem_pairs):
             exit('source/semantic paragraphs and communicative paragraph have different lengths.\nExiting...')
@@ -74,7 +74,7 @@ class Po:
             trans_docx = self.infile.parent / (self.infile.stem + '_translation.docx')
             create_trans_docx(trans, trans_docx)
 
-            gen_pdf(trans_docx)
+            # gen_pdf(trans_docx)
 
         total = self.infile.parent / (self.infile.stem + '_total.txt')
         if self.is_changed(all, total) or enforce or not total.is_file():
@@ -83,7 +83,7 @@ class Po:
             total_docx = self.infile.parent / (self.infile.stem + '_total.docx')
             create_total_docx(data, total_docx)
 
-            gen_pdf(total_docx)
+            # gen_pdf(total_docx)
 
     def is_changed(self, new_content, filepath):
         if not filepath.is_file():
@@ -130,7 +130,6 @@ class Po:
 
 LOEXE = shutil.which('libreoffice')
 
-
 def gen_pdf(file):
     print(f'{file.name}: Generating PDF...')
     docxs = list(file.absolute().parent.glob(f'{file.stem}*.docx'))
@@ -155,7 +154,7 @@ if __name__ == '__main__':
 
     """
 
-    folder = 'fr/reader'
+    folder = 'communicative/translation'
     to_process = None
     if len(sys.argv) == 1:
         to_process = 'all'
@@ -170,7 +169,7 @@ if __name__ == '__main__':
         else:
             enforce = False
     else:
-        raise (SyntaxError('not right'))
+        raise SyntaxError('not right')
 
     if to_process and to_process != 'all':
         file = Path(folder) / (to_process + '.po')
