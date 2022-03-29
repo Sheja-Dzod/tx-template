@@ -44,7 +44,10 @@ class Po:
                 sent_num += 1
             source = ' '.join(source)
             source = format_fr(source)
-            comment = ' '.join(comment)
+            # segment tibetan original into lines of 13 syllables
+            c_parts = ''.join(comment).split('་')
+            c_parts = [f'{c}་\n\n' if num > 0 and not num % 13 else f'{c}་' for num, c in enumerate(c_parts)]
+            comment = ''.join(c_parts)
             self._create_entry(msgid=source, msgctxt=f'line {num + 1}, {origin}', tcomment=comment)
 
     def txt_to_po(self, filename):

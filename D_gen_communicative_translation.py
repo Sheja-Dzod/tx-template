@@ -130,6 +130,7 @@ class Po:
 
 LOEXE = shutil.which('libreoffice')
 
+
 def gen_pdf(file):
     print(f'{file.name}: Generating PDF...')
     docxs = list(file.absolute().parent.glob(f'{file.stem}*.docx'))

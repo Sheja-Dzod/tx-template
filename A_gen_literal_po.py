@@ -10,6 +10,8 @@ import polib
 from antx import transfer
 from botok import Text, BasicTrie
 
+from format_unicode import bold
+
 
 def segment_in_words(string):
     t = Text(string)
@@ -70,11 +72,11 @@ class Po:
     def format_found_entries(self, entries):
         out = []
         for a, defs in entries:
-            out.append(f'\n、	〝{a[0]}〞 {a[1]}')
+            out.append(f'\n。︀	〝{a[0]}〞 {a[1]}')
             for defn, lines in defs:
                 lines = [l.replace('\n', '').replace('—', '-') for l in lines]
                 lines = ''.join([f' ⁃ {l}' for l in lines])
-                out.append(f'《{defn}》	{lines}')
+                out.append(f'{bold(defn)} {lines}')
         return '\n'.join(out)
 
     def txt_to_po(self, filename):
@@ -167,6 +169,7 @@ class Glossary:
         if p_file.is_file():
             entries = pickle.load(open(p_file, 'rb'))
         else:
+            print('parsing json in .pickle...')
             entries = {}
             glos = json.loads(Path(in_file).read_text())
             for num, entry in glos.items():
