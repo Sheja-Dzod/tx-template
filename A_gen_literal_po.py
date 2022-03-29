@@ -8,7 +8,7 @@ from uuid import uuid4
 
 import polib
 from antx import transfer
-from botok import Text, BasicTrie
+from botok import Text
 
 from format_unicode import bold
 
